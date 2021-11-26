@@ -34,3 +34,22 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>
+
+
+
+# Load Packages
+```{r}
+#install.packages("devtools")
+#devtools::install_github("m-clark/visibly")
+library(mgcv)
+library(ggplot2)
+library(scico)
+library(psych)
+library(visibly)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+
+```
+
