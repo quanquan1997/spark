@@ -34,3 +34,64 @@
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
   </component>
 </project>
+
+
+
+# Load Packages
+```{r}
+#install.packages("devtools")
+#devtools::install_github("m-clark/visibly")
+library(mgcv)
+library(ggplot2)
+library(scico)
+library(psych)
+library(visibly)
+library(stringr)
+library(dplyr)
+library(lubridate)
+library(tidyverse)
+
+```
+
+# 1 Read data
+```{r}
+filepath<-c('Men100m.csv','Men110hurdles.csv','Men200m.csv',
+            'Women100hurdles.csv','Women100m.csv','Women200m.csv')
+
+df_all<-data.frame()
+df_list <- list()
+for(i in 1:6){
+  df<-read.csv(file = filepath[i])
+  if (filepath[i] == 'Men110hurdles.csv'){
+    df[1:2,"DOB"] <-c("26/09/1884","15/02/1895") # unify date format
+  }
+  df$Date <- as.Date(df$Date, "%d/%m/%Y")
+  df$DOB <- as.Date(df$DOB, "%d/%m/%Y")
+  df$Age <- as.numeric((df$Date - df$DOB)/365) # Age (in year)
+
+  df$Type <- sub("\\w.{1,}\\d{1,3}(\\w{1,1}).*","\\1",filepath[i])
+  if (df$Type == "m"){
+    df$Type <- "Sprint"
+  }else{
+    df$Type <- "Hurdles"
+  }
+  df$Class <- str_extract(filepath[i],"\\w.{1,}\\d{1,3}\\w") #性别及比赛项目
+  df$Sex <- str_extract(df$Class,"[a-zA-Z]{1,}") #性别
+  df$Meter <- as.numeric(str_extract(df$Class,"\\d{1,3}")) #比赛的项目距离
+
+  #ggplot(aes(x=Date,y=Time,col=Class),data=df)+geom_point()+geom_smooth(method="lm")+labs(title=paste("Time vs. Date -",df$Class))
+  fit <- lm(Time ~ Date, df)
+  summary(fit)
+  
+  df$Speed <- df$Meter / df$Time #速度
+  df$Prcnt <- c(df$Time[2:length(df$Time)],df$Time[length(df$Time)])/df$Time
+  
+  #df <- subset(df, select = -c(Index))
+  
+  df_list[[i]] <- df
+  head(df)
+  df_all <- rbind(df_all, df)
+}
+#nu_data <- subset(data, select = -c(Index,DOB,Country,Venue,Competitor))
+head(df_all)
+```
